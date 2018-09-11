@@ -6,25 +6,59 @@
       @change="saveState">
 
       <template slot="title">
-        DaySpan
+        Lund Student Events
       </template>
 
       <template slot="menuRight">
-        <v-btn icon large href="https://github.com/ClickerMonkey/dayspan-vuetify" target="_blank">
-          <v-avatar size="32px" tile>
-            <img src="https://simpleicons.org/icons/github.svg" alt="Github">
+        <v-btn
+          slot="activator"
+          icon large
+          @click="loginClicked()">
+          <v-avatar v-if="loggedIn" size="32px" tile>
+            <i class="material-icons">account_circle</i>
+          </v-avatar>
+          <v-avatar v-else size="32px" tile>
+            <i class="material-icons">exit_to_app</i>
           </v-avatar>
         </v-btn>
       </template>
 
+      <!-- TODO: Button with multiple select dropdown
+      <template slot="menuRight">
+        <v-menu offset-y>
+          <v-btn
+            slot="activator"
+            icon large
+            href="#">
+            <v-avatar size="32px" tile>
+              <img src="https://simpleicons.org/icons/github.svg" alt="Select Calendars">
+            </v-avatar>
+          </v-btn>
+
+          <v-select
+            solo flat
+            return-object
+            multiple
+            v-model="shownCalendars"
+            :items="calendars"
+          ></v-select>
+        </v-menu>
+      </template>
+      -->
+
       <template slot="eventPopover" slot-scope="slotData">
          <ds-calendar-event-popover
           v-bind="slotData"
+          :editingAllowed="loggedIn"
           @finish="saveState"
         ></ds-calendar-event-popover>
       </template>
+ 
+      <template v-if="!loggedIn" slot="calendarAppAdd">
+        <span></span>
+      </template>
 
-      <template slot="eventCreatePopover" slot-scope="{placeholder, calendar, close}">
+      <template v-if="loggedIn" slot="eventCreatePopover" slot-scope="{placeholder, calendar, close}">
         <ds-calendar-event-create-popover
           :calendar-event="placeholder"
           :calendar="calendar"
@@ -32,6 +66,10 @@
           @create-edit="$refs.app.editPlaceholder"
           @create-popover-closed="saveState"
         ></ds-calendar-event-create-popover>
+      </template>
+
+      <template v-else slot="eventCreatePopover">
+        <span></span>
       </template>
 
       <template slot="eventTimeTitle" slot-scope="{calendarEvent, details}">
@@ -56,14 +94,20 @@
 import { Calendar, Weekday, Month } from 'dayspan';
 import Vue from 'vue';
 
-
 export default {
-
   name: 'app',
-
   data: () => ({
     storeKey: 'dayspanState',
     calendar: Calendar.months(),
+    calendars: [{
+      value: 1,
+      text: "LTH"
+    }, {
+      value: 2,
+      text: "Ostra Torn"
+    }],
+    shownCalendars: [],
+    fakeLogin: false,
     defaultEvents: [
       {
         data: {
@@ -241,14 +285,16 @@ export default {
       }
     ]
   }),
-
-  mounted()
-  {
+  mounted() {
     window.app = this.$refs.app;
-
     this.loadState();
   },
-
+  computed: {
+    loggedIn: function() {
+      // Check localstorage to see if we're logged in
+      return this.fakeLogin
+    }
+  },
   methods:
   {
     getCalendarTime(calendarEvent)
@@ -271,8 +317,15 @@ export default {
       return (sa === ea) ? (sh + ' - ' + eh + ea) : (sh + sa + ' - ' + eh + ea);
     },
 
+    loginClicked() {
+      // TODO: Show a popup with login screen
+      this.fakeLogin = !this.fakeLogin
+    },
+
+    // TODO: Remove these methods
     saveState()
     {
+      // Get current calendar state as JSON
       let state = this.calendar.toInput(true);
       let json = JSON.stringify(state);
 
@@ -318,7 +371,6 @@ export default {
 </script>
 
 <style>
-
 body, html, #app, #dayspan {
   font-family: Roboto, sans-serif !important;
   width: 100%;
@@ -330,5 +382,4 @@ body, html, #app, #dayspan {
   background-color: #f5f5f5 !important;
   margin-bottom: 8px !important;
 }
-
 </style>

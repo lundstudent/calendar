@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "dayspan": "^0.12.2",
-    "dayspan-vuetify": "^0.2.6",
+    "dayspan-vuetify": "github:lundstudent/dayspan-vuetify#readonly",
     "material-design-icons-iconfont": "^3.0.3",
     "vue": "^2.5.17"
   },
